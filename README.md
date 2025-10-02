@@ -37,7 +37,7 @@ npm install
 npx tsx server/index.ts
 ```
 
-This starts both the API and the client (via Vite in dev) on the same port. By default it listens on `127.0.0.1:5000` or the value of `PORT` if set.
+This starts both the API and the client (via Vite in dev) on the same port. By default it listens on `0.0.0.0:5000` (accessible via `http://localhost:5000`) or the value of `PORT` if set.
 
 Optional: If you prefer using package scripts that set NODE_ENV, PowerShell syntax is:
 
@@ -47,7 +47,7 @@ $env:NODE_ENV = "development"; npx tsx server/index.ts
 
 3. Open the app
 
-- http://127.0.0.1:5000/
+- http://localhost:5000/
 
 ## Production build & run
 
@@ -81,7 +81,7 @@ If you want to use a database, the schema is defined in `shared/schema.ts` (Driz
 
 ## API overview
 
-Base URL: `http://127.0.0.1:5000`
+Base URL: `http://localhost:5000`
 
 - GET `/api/posts`
   - List all posts (most recent first)
