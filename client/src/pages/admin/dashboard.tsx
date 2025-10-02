@@ -287,7 +287,7 @@ export default function AdminDashboard() {
                             <span data-testid={`text-post-likes-${post.id}`}>{post.likes} likes</span>
                           </span>
                           <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-xs">
-                            {post.category}
+                            By {post.author}
                           </span>
                         </div>
                       </div>

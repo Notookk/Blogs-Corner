@@ -7,7 +7,8 @@ export const posts = pgTable("posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  category: text("category").notNull(),
+  author: text("author").notNull(),
+  category: text("category"), // Temporary backwards compatibility
   imageUrl: text("image_url"),
   imageFileName: text("image_file_name"),
   views: integer("views").default(0).notNull(),
@@ -23,6 +24,9 @@ export const insertPostSchema = createInsertSchema(posts).omit({
   likes: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  category: z.string().optional(), // Make category optional since we're transitioning to author
+  author: z.string().min(1, 'Author is required'),
 });
 
 export type InsertPost = z.infer<typeof insertPostSchema>;

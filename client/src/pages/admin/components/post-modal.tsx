@@ -7,6 +7,7 @@ import { X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -37,7 +38,7 @@ import type { Post } from '@shared/schema';
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   content: z.string().min(1, 'Content is required'),
-  category: z.string().min(1, 'Category is required'),
+  author: z.string().min(1, 'Author is required'),
   published: z.boolean().default(true),
 });
 
@@ -59,7 +60,7 @@ export function PostModal({ isOpen, onClose, post }: PostModalProps) {
     defaultValues: {
       title: '',
       content: '',
-      category: '',
+      author: '',
       published: true,
     },
   });
@@ -69,7 +70,7 @@ export function PostModal({ isOpen, onClose, post }: PostModalProps) {
       form.reset({
         title: post.title,
         content: post.content,
-        category: post.category,
+        author: post.author,
         published: post.published,
       });
       if (post.imageUrl) {
@@ -79,7 +80,7 @@ export function PostModal({ isOpen, onClose, post }: PostModalProps) {
       form.reset({
         title: '',
         content: '',
-        category: '',
+        author: '',
         published: true,
       });
       setPreviewUrl('');
@@ -115,10 +116,11 @@ export function PostModal({ isOpen, onClose, post }: PostModalProps) {
       });
       onClose();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Post creation error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create post',
+        description: error?.message || 'Failed to create post',
         variant: 'destructive',
       });
     },
@@ -161,9 +163,17 @@ export function PostModal({ isOpen, onClose, post }: PostModalProps) {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    console.log('Form values being submitted:', values);
+    
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value.toString());
+    });
+
+    // Log formData contents
+    console.log('FormData entries:');
+    formData.forEach((value, key) => {
+      console.log(key, value);
     });
 
     if (selectedFile) {
@@ -197,6 +207,9 @@ export function PostModal({ isOpen, onClose, post }: PostModalProps) {
           <DialogTitle>
             {post ? 'Edit Post' : 'Create New Post'}
           </DialogTitle>
+          <DialogDescription>
+            {post ? 'Update your blog post details below.' : 'Fill in the details to create a new blog post.'}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -233,24 +246,17 @@ export function PostModal({ isOpen, onClose, post }: PostModalProps) {
 
             <FormField
               control={form.control}
-              name="category"
+              name="author"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-category">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Technology">Technology</SelectItem>
-                      <SelectItem value="Design">Design</SelectItem>
-                      <SelectItem value="Photography">Photography</SelectItem>
-                      <SelectItem value="Travel">Travel</SelectItem>
-                      <SelectItem value="Lifestyle">Lifestyle</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Author</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter author name (e.g. John Doe)..."
+                      {...field}
+                      data-testid="input-author"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

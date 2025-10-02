@@ -10,7 +10,7 @@ import PublicBlog from "@/pages/public/blog";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={AdminDashboard} />
+      <Route path="/" component={PublicBlog} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/blog" component={PublicBlog} />
       <Route component={NotFound} />

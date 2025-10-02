@@ -84,11 +84,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new post
+    // Create new post
   app.post('/api/posts', upload.single('image'), async (req, res) => {
     try {
       let imageUrl = null;
       let imageFileName = null;
+
+      console.log('Received post data:', req.body);
 
       // Handle image upload
       if (req.file) {
@@ -103,11 +105,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imageFileName,
       };
 
+      // TEMPORARY FIX: Add category field for backwards compatibility
+      if (postData.author) {
+        postData.category = postData.author; // Required by old schema
+      }
+
       // Convert published string to boolean if present
       if (postData.published !== undefined) {
         postData.published = postData.published === 'true' || postData.published === true;
       }
 
+      console.log('Final post data before validation:', postData);
+      
       const validatedData = insertPostSchema.parse(postData);
       const post = await storage.createPost(validatedData);
       
@@ -116,7 +125,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(post);
     } catch (error) {
+      console.error('Post creation error:', error);
       if (error instanceof z.ZodError) {
+        console.error('Validation errors:', error.errors);
         return res.status(400).json({ message: 'Invalid post data', errors: error.errors });
       }
       res.status(500).json({ message: 'Failed to create post' });
@@ -205,19 +216,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Toggle post like
+    // Toggle post like
   app.post('/api/posts/:id/like', async (req, res) => {
     try {
-      const post = await storage.toggleLike(req.params.id);
+      const { isCurrentlyLiked } = req.body;
+      console.log('Like endpoint called:', { 
+        postId: req.params.id, 
+        isCurrentlyLiked, 
+        requestBody: req.body,
+        bodyType: typeof isCurrentlyLiked 
+      });
+      
+      const post = await storage.toggleLike(req.params.id, isCurrentlyLiked);
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
       }
+
+      console.log('Like toggled successfully:', { 
+        postId: req.params.id, 
+        newLikeCount: post.likes,
+        wasCurrentlyLiked: isCurrentlyLiked 
+      });
 
       // Broadcast update to SSE connections
       broadcastUpdate('post_liked', post);
       
       res.json(post);
     } catch (error) {
+      console.error('Like toggle error:', error);
       res.status(500).json({ message: 'Failed to update like count' });
     }
   });

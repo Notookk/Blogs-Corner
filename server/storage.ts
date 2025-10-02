@@ -47,6 +47,8 @@ export class MemStorage implements IStorage {
       id,
       imageUrl: insertPost.imageUrl ?? null,
       imageFileName: insertPost.imageFileName ?? null,
+      // Normalize transitional field: ensure category is null (not undefined)
+      category: insertPost.category ?? null,
       published: insertPost.published ?? true,
       views: 0,
       likes: 0,
@@ -64,6 +66,8 @@ export class MemStorage implements IStorage {
     const updatedPost: Post = {
       ...post,
       ...updateData,
+      // Normalize transitional field on updates as well
+      category: (updateData.category ?? post.category) ?? null,
       updatedAt: new Date(),
     };
     
